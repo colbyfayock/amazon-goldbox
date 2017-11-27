@@ -6,6 +6,9 @@ Does a few things to jumpstart and automate some of the affiliate work:
  - Cleans up the meta into a more usable format
  - Adds the affiliate ID as a tag to all links
  - Finally, dumps it in the bucket
+
+## Prerequisites
+ - AWS IAM user set up and configured
  
 ## Get Started
 1. `npm install`
