@@ -1,3 +1,5 @@
+custom: ${file(./env.yml)}
+
 service: amazon-goldbox
 
 provider:
@@ -6,12 +8,11 @@ provider:
   region: us-east-1
   stage: production
   environment:
-    env: ${file(./env.yml)}
     service: ${self:service}
-    bucket: ${self:provider.environment.env.bucket}
+    bucket: ${self:custom.bucket}
     path: ${self:provider.stage}/goldbox/amazon-goldbox.json
     rss_feed:  http://rssfeeds.s3.amazonaws.com/goldbox
-    affiliate_id: ${self:provider.environment.env.affiliate_id}
+    affiliate_id: ${self:custom.affiliate_id}
   iamRoleStatements:
     - Effect: Allow
       Action:
