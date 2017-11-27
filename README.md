@@ -9,6 +9,7 @@ Does a few things to jumpstart and automate some of the affiliate work:
 
 ## Prerequisites
  - AWS IAM user set up and configured
+ - S3 bucket created with policy desired
  
 ## Get Started
 1. `npm install`
