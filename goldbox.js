@@ -57,7 +57,7 @@ module.exports.goldbox = function(event, context) {
         // for easier JSland usage
 
         AmazonRSS.feedToJson(body, (json_error, json_results) => {
-console.log('process.env.affiliate_id', process.env.affiliate_id);
+
             // Clean up the data and personalize it
             
             var feed = AmazonRSS.parseRawFeed(json_results, {
