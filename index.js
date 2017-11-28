@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 
 const goldbox = require('./goldbox').goldbox;
+const recent = require('./recent').recent;
 
 /**
  * /goldbox
@@ -16,6 +17,22 @@ app.get('/goldbox', function(req, res) {
     // to give some kind of context to the response
 
     goldbox(function(data) {
+        res.send(data);
+    });
+
+});
+
+/**
+ * /recent
+ * @description
+ */
+
+app.get('/recent', function(req, res) {
+
+    // Trigger the recent function with a callback
+    // to give some kind of context to the response
+
+    recent(function(data) {
         res.send(data);
     });
 
