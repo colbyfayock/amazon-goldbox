@@ -4,6 +4,11 @@ const s3 = new aws.S3();
 
 const AmazonRSS = require('./lib/amazon-rss');
 const Util = require('./lib/util');
+const Kenny = require('./lib/kenny');
+
+const blacklist = process.env.blacklist_path ? require(process.env.blacklist_path) : false;
+const hashtags = process.env.hashtags_path ? require(process.env.hashtags_path) : false;
+const accounts = process.env.accounts_path ? require(process.env.accounts_path) : false;
 
 /**
  * recent
@@ -13,14 +18,29 @@ const Util = require('./lib/util');
 
 module.exports.recent = function(event, context) {
 
-    Util.logHandler({
-        namespace: process.env.service,
-        message: `RSS Get - ${process.env.rss_feed}`
+    Kenny.set({
+        service: process.env.service,
+        function: 'recent'
     });
+
+    const goldbox_url = `https://s3.amazonaws.com/${process.env.bucket}/${process.env.goldbox_path}`;
+
+    const recent_path = `${process.env.bucket}/${process.env.recent_path}`;
+
+    Kenny.log(`Goldbox Get - ${goldbox_url}`);
 
     // Grab the goldbox.json path provided from /goldbox
 
-    request(`https://s3.amazonaws.com/${process.env.bucket}/${process.env.goldbox_path}`, {}, (error, response, body) => {
+    request(goldbox_url, {}, (error, response, body) => {
+
+        if ( error ) {
+            Util.respond({
+                callback: event,
+                status_code: 500,
+                message: Kenny.log(`Goldbox Get Error - ${JSON.stringify(error)}`)
+            });
+            return;
+        }
 
         // Parse the JSON and create a new object
 
@@ -28,23 +48,10 @@ module.exports.recent = function(event, context) {
             items: JSON.parse(body).items
         });
 
-        if ( error ) {
-
-            Util.logHandler({
-                namespace: process.env.service,
-                callback: event,
-                status_code: 500,
-                message: `RSS Error - ${JSON.stringify(error)}`
-            });
-
-            return;
-
-        }
-
         // If we have blacklist items in our config, filter
 
-        if ( Array.isArray(process.env.blacklist) ) {
-            feed.items = AmazonRSS.filterItems(feed.items, process.env.blacklist);
+        if ( Array.isArray(blacklist) ) {
+            feed.items = AmazonRSS.filterItems(feed.items, blacklist);
         }
 
         // Cut it down to the most recent 400 after we remove the blacklisted items
@@ -57,20 +64,17 @@ module.exports.recent = function(event, context) {
 
         // If we have a hashtag list in our config, transform the feed to include them
 
-        if ( Array.isArray(process.env.hashtags) ) {
-            feed.items = AmazonRSS.keywordifyItems(feed.items, process.env.hashtags, '#');
+        if ( Array.isArray(hashtags) ) {
+            feed.items = AmazonRSS.keywordifyItems(feed.items, hashtags, '#');
         }
 
         // If we have a list of accounts, transform the feeds to include mentions to them
 
-        if ( Array.isArray(process.env.accounts) ) {
-            feed.items = AmazonRSS.keywordifyItems(feed.items, process.env.accounts, '@');
+        if ( Array.isArray(accounts) ) {
+            feed.items = AmazonRSS.keywordifyItems(feed.items, accounts, '@');
         }
 
-        Util.logHandler({
-            namespace: process.env.service,
-            message: `S3 Put - ${process.env.bucket}/${process.env.recent_path}`
-        });
+        Kenny.log(`S3 Put - ${recent_path}`);
 
         // Once we have the desired feed, dump it into an S3 bucket
 
@@ -81,23 +85,44 @@ module.exports.recent = function(event, context) {
         }, function(s3_error, s3_data) {
 
             if ( s3_error ) {
-
-                Util.logHandler({
-                    namespace: process.env.service,
+                Util.respond({
                     callback: event,
                     status_code: 500,
-                    message: `S3 Error - ${JSON.stringify(s3_error)}`
+                    message: Kenny.log(`S3 Put Error - ${JSON.stringify(s3_error)}`)
                 });
-
                 return;
-
             }
 
-            Util.logHandler({
-                namespace: process.env.service,
-                callback: event,
-                status_code: 200,
-                message: `S3 Success - ${JSON.stringify(s3_data)}`
+            Kenny.log(`S3 Put Success - ${JSON.stringify(s3_data)}`);
+
+            // Create a copied "live" version which we'll use and modify as we
+            // pull new entries for the feed
+
+            Kenny.log(`S3 Copy - ${recent_path} to ${recent_path.replace('.json', '-live.json')}`);
+
+            s3.copyObject({
+                Bucket: process.env.bucket,
+                CopySource: `${recent_path}`,
+                Key: process.env.recent_path.replace('.json', '-live.json')
+            }, function(copy_error, copy_data) {
+
+                if ( copy_error ) {
+                    Util.respond({
+                        callback: event,
+                        status_code: 500,
+                        message: Kenny.log(`S3 Copy Error - ${JSON.stringify(copy_error)}`)
+                    });
+                    return;
+                }
+
+                // Finally respond with a 200
+
+                Util.respond({
+                    callback: event,
+                    status_code: 200,
+                    message: Kenny.log(`S3 Copy Success - [${JSON.stringify(s3_data)}, ${JSON.stringify(copy_data)}]`)
+                });
+
             });
 
         });

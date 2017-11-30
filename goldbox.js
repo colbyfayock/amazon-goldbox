@@ -4,6 +4,7 @@ const s3 = new aws.S3();
 
 const AmazonRSS = require('./lib/amazon-rss');
 const Util = require('./lib/util');
+const Kenny = require('./lib/kenny');
 
 /**
  * goldbox
@@ -13,32 +14,27 @@ const Util = require('./lib/util');
 
 module.exports.goldbox = function(event, context) {
 
-    Util.logHandler({
-        namespace: process.env.service,
-        message: `RSS Get - ${process.env.rss_feed}`
+    Kenny.set({
+        service: process.env.service,
+        function: 'goldbox'
     });
+
+    Kenny.log(`RSS Get - ${process.env.rss_feed}`);
 
     // Make a request to the RSS feed per the config
 
     request(process.env.rss_feed, {}, (error, response, body) => {
 
         if ( error ) {
-
-            Util.logHandler({
-                namespace: process.env.service,
+            Util.respond({
                 callback: event,
                 status_code: 500,
-                message: `RSS Error - ${JSON.stringify(error)}`
+                message: Kenny.log(`RSS Error - ${JSON.stringify(error)}`)
             });
-
             return;
-
         }
 
-        Util.logHandler({
-            namespace: process.env.service,
-            message: `RSS Success - ${process.env.rss_feed}`
-        });
+        Kenny.log(`RSS Success - ${process.env.rss_feed}`);
 
         // Once we successfully have the feed, convert it to json
         // for easier JSland usage
@@ -55,10 +51,7 @@ module.exports.goldbox = function(event, context) {
 
             feed = AmazonRSS.sortFeed(feed);
 
-            Util.logHandler({
-                namespace: process.env.service,
-                message: `S3 Put - ${process.env.bucket}/${process.env.goldbox_path}`
-            });
+            Kenny.log(`S3 Put - ${process.env.bucket}/${process.env.goldbox_path}`);
 
             // Once we have the desired feed, dump it into an S3 bucket
 
@@ -69,23 +62,20 @@ module.exports.goldbox = function(event, context) {
             }, function(s3_error, s3_data) {
 
                 if ( s3_error ) {
-
-                    Util.logHandler({
-                        namespace: process.env.service,
+                    Util.respond({
                         callback: event,
                         status_code: 500,
-                        message: `S3 Error - ${JSON.stringify(s3_error)}`
+                        message: Kenny.log(`S3 Error - ${JSON.stringify(s3_error)}`)
                     });
-
                     return;
-
                 }
 
-                Util.logHandler({
-                    namespace: process.env.service,
+                // Finally respond with a 200
+
+                Util.respond({
                     callback: event,
                     status_code: 200,
-                    message: `S3 Success - ${JSON.stringify(s3_data)}`
+                    message: Kenny.log(`S3 Success - ${JSON.stringify(s3_data)}`)
                 });
 
             });

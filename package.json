@@ -9,7 +9,8 @@
     "request": "^2.83.0",
     "serverless": "^1.24.1",
     "serverless-http": "^1.5.2",
-    "xml2js": "^0.4.19"
+    "xml2js": "^0.4.19",
+    "xmlbuilder": "^9.0.4"
   },
   "devDependencies": {
     "serverless-offline": "^3.16.0"

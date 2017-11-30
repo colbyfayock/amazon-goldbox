@@ -4,6 +4,7 @@ const app = express();
 
 const goldbox = require('./goldbox').goldbox;
 const recent = require('./recent').recent;
+const rss = require('./rss').rss;
 
 /**
  * /goldbox
@@ -24,7 +25,8 @@ app.get('/goldbox', function(req, res) {
 
 /**
  * /recent
- * @description
+ * @description Grabs the most recent 400 and dumpes into
+ *     the specified s3 bucket
  */
 
 app.get('/recent', function(req, res) {
@@ -33,6 +35,22 @@ app.get('/recent', function(req, res) {
     // to give some kind of context to the response
 
     recent(function(data) {
+        res.send(data);
+    });
+
+});
+
+/**
+ * /rss
+ * @description
+ */
+
+app.get('/rss', function(req, res) {
+
+    // Trigger the rss function with a callback
+    // to give some kind of context to the response
+
+    rss(function(data) {
         res.send(data);
     });
 

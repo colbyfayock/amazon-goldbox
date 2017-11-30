@@ -12,11 +12,12 @@ provider:
     bucket: ${self:custom.bucket}
     goldbox_path: ${self:provider.stage}/goldbox/goldbox.json
     recent_path: ${self:provider.stage}/goldbox/recent.json
+    rss_path: ${self:provider.stage}/goldbox/rss.xml
     rss_feed:  http://rssfeeds.s3.amazonaws.com/goldbox
     affiliate_id: ${self:custom.affiliate_id}
-    blacklist: ${self:custom.blacklist}
-    hashtags: ${self:custom.hashtags}
-    accounts: ${self:custom.accounts}
+    blacklist_path: ${self:custom.blacklist_path, ''}
+    hashtags_path: ${self:custom.hashtags_path, ''}
+    accounts_path: ${self:custom.accounts_path, ''}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -37,6 +38,10 @@ functions:
     handler: recent.recent
     events:
       - schedule: cron(55 13 * * ? *)
+  rss:
+    handler: rss.rss
+    events:
+      - schedule: cron(0/30 * * * ? *)
 
 plugins:
   - serverless-offline
