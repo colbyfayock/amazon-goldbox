@@ -17,7 +17,7 @@ provider:
     affiliate_id: ${self:custom.affiliate_id}
     blacklist_path: ${self:custom.blacklist_path, ''}
     hashtags_path: ${self:custom.hashtags_path, ''}
-    accounts_path: ${self:custom.accounts_path, ''}
+    # accounts_path: ${self:custom.accounts_path, ''}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -41,7 +41,11 @@ functions:
   rss:
     handler: rss.rss
     events:
-      - schedule: cron(0/30 * * * ? *)
+      - schedule: cron(0/23 * * * ? *)
+  # tweet:
+  #   handler: rss.rss
+  #   events:
+  #     - schedule: cron(0/30 * * * ? *)
 
 plugins:
   - serverless-offline

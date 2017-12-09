@@ -1,10 +1,11 @@
 const request = require('request');
-const aws = require('aws-sdk');
-const s3 = new aws.S3();
+const awssdk = require('aws-sdk');
+const s3 = new awssdk.S3();
 
 const AmazonRSS = require('./lib/amazon-rss');
 const Util = require('./lib/util');
 const Kenny = require('./lib/kenny');
+const AWS = require('./lib/aws');
 
 const blacklist = process.env.blacklist_path ? require(process.env.blacklist_path) : false;
 const hashtags = process.env.hashtags_path ? require(process.env.hashtags_path) : false;
@@ -23,15 +24,13 @@ module.exports.recent = function(event, context) {
         function: 'recent'
     });
 
-    const goldbox_url = `https://s3.amazonaws.com/${process.env.bucket}/${process.env.goldbox_path}`;
-
     const recent_path = `${process.env.bucket}/${process.env.recent_path}`;
 
-    Kenny.log(`Goldbox Get - ${goldbox_url}`);
+    Kenny.log(`Goldbox Get - ${AWS.s3Url(process.env.bucket, process.env.goldbox_path)}`);
 
     // Grab the goldbox.json path provided from /goldbox
 
-    request(goldbox_url, {}, (error, response, body) => {
+    request(AWS.s3Url(process.env.bucket, process.env.goldbox_path), {}, (error, response, body) => {
 
         if ( error ) {
             Util.respond({
@@ -98,12 +97,12 @@ module.exports.recent = function(event, context) {
             // Create a copied "live" version which we'll use and modify as we
             // pull new entries for the feed
 
-            Kenny.log(`S3 Copy - ${recent_path} to ${recent_path.replace('.json', '-live.json')}`);
+            Kenny.log(`S3 Copy - ${recent_path} to ${AWS.s3LiveUrl(recent_path)}`);
 
             s3.copyObject({
                 Bucket: process.env.bucket,
                 CopySource: `${recent_path}`,
-                Key: process.env.recent_path.replace('.json', '-live.json')
+                Key: AWS.s3LiveUrl(process.env.recent_path)
             }, function(copy_error, copy_data) {
 
                 if ( copy_error ) {

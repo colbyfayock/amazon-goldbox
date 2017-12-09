@@ -1,8 +1,9 @@
 const request = require('request');
-const aws = require('aws-sdk');
-const s3 = new aws.S3();
+const awssdk = require('aws-sdk');
+const s3 = new awssdk.S3();
 
 const AmazonRSS = require('./lib/amazon-rss');
+const AWS = require('./lib/aws');
 const Util = require('./lib/util');
 const Kenny = require('./lib/kenny');
 
@@ -19,16 +20,11 @@ module.exports.rss = function(event, context) {
         function: 'rss'
     });
 
-    const recent_live_path = process.env.recent_path.replace('.json', '-live.json');
-    const recent_live_url = `https://s3.amazonaws.com/${process.env.bucket}/${recent_live_path}`;
-
-    const rss_url = `https://s3.amazonaws.com/${process.env.bucket}/${process.env.rss_path}`;
-
     // Grab the goldbox.json path provided from /goldbox
 
-    Kenny.log(`Recent Get - ${recent_live_url}`);
+    Kenny.log(`Recent Get - ${AWS.s3Url(process.env.bucket, AWS.s3LiveUrl(process.env.recent_path))}`);
 
-    request(recent_live_url, {}, (recent_error, recent_response, recent_body) => {
+    request(AWS.s3Url(process.env.bucket, AWS.s3LiveUrl(process.env.recent_path)), {}, (recent_error, recent_response, recent_body) => {
 
         if ( recent_error ) {
             Util.respond({
@@ -39,18 +35,28 @@ module.exports.rss = function(event, context) {
             return;
         }
 
-        Kenny.log(`Recent Get Success - ${recent_live_url}`);
+        Kenny.log(`Recent Get Success - ${AWS.s3Url(process.env.bucket, AWS.s3LiveUrl(process.env.recent_path))}`);
 
         // Parse the JSON and create a new object
 
         var feed = JSON.parse(recent_body),
-            new_item = feed.items.shift();
+            new_item;
+
+        // Shuffle the array of items so we don't get multiple similar
+        // items posted together at the same time
+
+        feed.items = Util.shuffleArray(feed.items);
+
+        // Cut the first item off of the array that we'll
+        // use as our new item
+
+        new_item = feed.items.shift();
 
         // Try to grab the most recent RSS feed
 
-        Kenny.log(`RSS Get - ${rss_url}`);
+        Kenny.log(`RSS Get - ${AWS.s3Url(process.env.bucket, process.env.rss_path)}`);
 
-        request(rss_url, {}, (rss_error, rss_response, rss_body) => {
+        request(AWS.s3Url(process.env.bucket, process.env.rss_path), {}, (rss_error, rss_response, rss_body) => {
 
             // This should fail silently, as if we don't find the XML, we want
             // to create a new one
@@ -59,7 +65,7 @@ module.exports.rss = function(event, context) {
                 Kenny.log(`RSS Get Error - ${JSON.stringify(rss_error)}`);
             }
 
-            Kenny.log(`RSS Get Success - ${rss_url}`);
+            Kenny.log(`RSS Get Success - ${AWS.s3Url(process.env.bucket, process.env.rss_path)}`);
 
             // Try to parse the feed. If this isn't available, it will return null
 
@@ -76,7 +82,7 @@ module.exports.rss = function(event, context) {
 
                 // Save the RSS feed XML into S3
 
-                Kenny.log(`S3 Put RSS - ${rss_url}`);
+                Kenny.log(`S3 Put RSS - ${AWS.s3Url(process.env.bucket, process.env.rss_path)}`);
 
                 s3.putObject({
                     Bucket: process.env.bucket,
@@ -98,11 +104,11 @@ module.exports.rss = function(event, context) {
                     // Replace the "live" version of the feed so we don't double add any
                     // entries to the feed
 
-                    Kenny.log(`S3 Put Recent - ${recent_live_url}`);
+                    Kenny.log(`S3 Put Recent - ${AWS.s3Url(process.env.bucket, AWS.s3LiveUrl(process.env.recent_path))}`);
 
                     s3.putObject({
                         Bucket: process.env.bucket,
-                        Key: recent_live_path,
+                        Key: AWS.s3LiveUrl(process.env.recent_path),
                         Body: JSON.stringify(feed),
                     }, function(s3_feed_error, s3_feed_data) {
 

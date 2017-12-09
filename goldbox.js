@@ -1,6 +1,6 @@
 const request = require('request');
-const aws = require('aws-sdk');
-const s3 = new aws.S3();
+const awssdk = require('aws-sdk');
+const s3 = new awssdk.S3();
 
 const AmazonRSS = require('./lib/amazon-rss');
 const Util = require('./lib/util');
