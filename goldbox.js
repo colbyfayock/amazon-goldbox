@@ -36,48 +36,36 @@ module.exports.goldbox = function(event, context) {
 
         Kenny.log(`RSS Success - ${process.env.rss_feed}`);
 
-        // Once we successfully have the feed, convert it to json
-        // for easier JSland usage
+        var widget_scripts = AmazonRSS.getScriptsFromHtml(body);
+        var deals = AmazonRSS.getDealsFeedFromScripts(widget_scripts, {
+            affiliate_id: process.env.affiliate_id
+        });
 
-        AmazonRSS.feedToJson(body, (json_error, json_results) => {
+        Kenny.log(`S3 Put - ${process.env.bucket}/${process.env.goldbox_path}`);
 
-            // Clean up the data and personalize it
+        // Once we have the desired feed, dump it into an S3 bucket
 
-            var feed = AmazonRSS.parseRawFeed(json_results, {
-                affiliate_id: process.env.affiliate_id
-            });
+        s3.putObject({
+            Bucket: process.env.bucket,
+            Key: process.env.goldbox_path,
+            Body: JSON.stringify(deals),
+        }, function(s3_error, s3_data) {
 
-            // Sort the feed, this sorts by the published date of the item
-
-            feed = AmazonRSS.sortFeed(feed);
-
-            Kenny.log(`S3 Put - ${process.env.bucket}/${process.env.goldbox_path}`);
-
-            // Once we have the desired feed, dump it into an S3 bucket
-
-            s3.putObject({
-                Bucket: process.env.bucket,
-                Key: process.env.goldbox_path,
-                Body: JSON.stringify(feed),
-            }, function(s3_error, s3_data) {
-
-                if ( s3_error ) {
-                    Util.respond({
-                        callback: event,
-                        status_code: 500,
-                        message: Kenny.log(`S3 Error - ${JSON.stringify(s3_error)}`)
-                    });
-                    return;
-                }
-
-                // Finally respond with a 200
-
+            if ( s3_error ) {
                 Util.respond({
                     callback: event,
-                    status_code: 200,
-                    message: Kenny.log(`S3 Success - ${JSON.stringify(s3_data)}`)
+                    status_code: 500,
+                    message: Kenny.log(`S3 Error - ${JSON.stringify(s3_error)}`)
                 });
+                return;
+            }
 
+            // Finally respond with a 200
+
+            Util.respond({
+                callback: event,
+                status_code: 200,
+                message: Kenny.log(`S3 Success - ${JSON.stringify(s3_data)}`)
             });
 
         });

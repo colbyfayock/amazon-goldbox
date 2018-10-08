@@ -13,7 +13,7 @@ provider:
     goldbox_path: ${self:provider.stage}/goldbox/goldbox.json
     recent_path: ${self:provider.stage}/goldbox/recent.json
     rss_path: ${self:provider.stage}/goldbox/rss.xml
-    rss_feed:  http://rssfeeds.s3.amazonaws.com/goldbox
+    rss_feed:  https://amazon.com/gp/goldbox
     affiliate_id: ${self:custom.affiliate_id}
     blacklist_path: ${self:custom.blacklist_path, ''}
     hashtags_path: ${self:custom.hashtags_path, ''}
