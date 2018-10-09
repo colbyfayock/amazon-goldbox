@@ -42,10 +42,6 @@ functions:
     handler: rss.rss
     events:
       - schedule: cron(0/23 * * * ? *)
-  # tweet:
-  #   handler: rss.rss
-  #   events:
-  #     - schedule: cron(0/30 * * * ? *)
 
 plugins:
   - serverless-offline
