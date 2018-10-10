@@ -71,6 +71,11 @@ module.exports.rss = function(event, context) {
 
             AmazonRSS.feedToJson(rss_body, (json_error, json_results) => {
 
+                if ( json_error) {
+                  Kenny.log(`RSS Parse Error - ${json_error}`);
+                  return;
+                }
+
                 var rss_feed = AmazonRSS.parseRawFeed(json_results);
 
                 if ( !Array.isArray(rss_feed.items) ) {

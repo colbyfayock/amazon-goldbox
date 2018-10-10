@@ -33,15 +33,15 @@ functions:
   goldbox:
     handler: goldbox.goldbox
     events:
-      - schedule: cron(50 13 * * ? *)
+      - schedule: cron(50 4,12,20 * * ? *)
   recent:
     handler: recent.recent
     events:
-      - schedule: cron(55 13 * * ? *)
+      - schedule: cron(55 4,12,20 * * ? *)
   rss:
     handler: rss.rss
     events:
-      - schedule: cron(0/23 * * * ? *)
+      - schedule: rate(46 minutes)
 
 plugins:
   - serverless-offline
