@@ -93,6 +93,7 @@ module.exports.rss = function(event, context) {
                     Bucket: process.env.bucket,
                     Key: process.env.rss_path,
                     Body: AmazonRSS.feedToXml(rss_feed),
+                    ContentType: 'application/xml'
                 }, function(s3_error, s3_data) {
 
                     if ( s3_error ) {
