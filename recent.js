@@ -64,13 +64,13 @@ module.exports.recent = function(event, context) {
         // If we have a hashtag list in our config, transform the feed to include them
 
         if ( Array.isArray(hashtags) ) {
-            feed.items = AmazonRSS.keywordifyItems(feed.items, hashtags, '#');
+          feed.items = AmazonRSS.keywordifyItems(feed.items, hashtags, '#');
         }
 
         // If we have a list of accounts, transform the feeds to include mentions to them
 
         if ( Array.isArray(accounts) ) {
-            feed.items = AmazonRSS.keywordifyItems(feed.items, accounts, '@');
+          feed.items = AmazonRSS.keywordifyItems(feed.items, accounts, '@');
         }
 
         Kenny.log(`S3 Put - ${recent_path}`);
