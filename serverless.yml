@@ -6,7 +6,7 @@ provider:
   name: aws
   runtime: nodejs8.10
   region: us-east-1
-  stage: development
+  stage: production
   environment:
     service: ${self:service}
     bucket: ${self:custom.bucket}
@@ -26,7 +26,7 @@ functions:
   feeds:
     handler: feeds.feeds
     events:
-      - schedule: cron(50 4,12,20 * * ? *)
+      - schedule: cron(50 10 * * ? *)
   rss:
     handler: rss.rss
     events:
