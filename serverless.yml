@@ -4,20 +4,18 @@ service: amazon-goldbox
 
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: nodejs8.10
   region: us-east-1
-  stage: production
+  stage: development
   environment:
     service: ${self:service}
     bucket: ${self:custom.bucket}
-    goldbox_path: ${self:provider.stage}/goldbox/goldbox.json
-    recent_path: ${self:provider.stage}/goldbox/recent.json
-    rss_path: ${self:provider.stage}/goldbox/rss.xml
-    rss_feed:  https://amazon.com/gp/goldbox
+    feeds_path: ${self:provider.stage}/rss/feeds.json
+    active_path: ${self:provider.stage}/rss/active.json
+    rss_path: ${self:provider.stage}/rss/rss.xml
     affiliate_id: ${self:custom.affiliate_id}
     blacklist_path: ${self:custom.blacklist_path, ''}
     hashtags_path: ${self:custom.hashtags_path, ''}
-    # accounts_path: ${self:custom.accounts_path, ''} # commented out because IFTTT strips @
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -25,19 +23,10 @@ provider:
       Resource: "arn:aws:s3:::${self:provider.environment.bucket}/*"
 
 functions:
-  app:
-    handler: index.handler
-    events:
-      - http: ANY /
-      - http: 'ANY {proxy+}'
-  goldbox:
-    handler: goldbox.goldbox
+  feeds:
+    handler: feeds.feeds
     events:
       - schedule: cron(50 4,12,20 * * ? *)
-  recent:
-    handler: recent.recent
-    events:
-      - schedule: cron(55 4,12,20 * * ? *)
   rss:
     handler: rss.rss
     events:
