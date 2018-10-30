@@ -4,10 +4,6 @@ const { s3Url, s3LiveUrl, getObject, copyObject, putObject } = require('./lib/aw
 const { respondToSuccess, respondToError } = require('./lib/lambda');
 const Product = require('./lib/product');
 const Rss = require('./lib/rss');
-
-
-
-const AmazonRSS = require('./lib/amazon-rss');
 const Util = require('./lib/util');
 
 const MAX_RSS_COUNT = 100;
