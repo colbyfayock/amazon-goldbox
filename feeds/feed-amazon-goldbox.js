@@ -19,7 +19,8 @@ class FeedAmazonGoldbox extends Feed {
 
       this.get().then(response => {
 
-        const scripts = getGoldboxScriptsFromHtml(response.data);
+        const response_data = Array.isArray(response) ? response[0] : response;
+        const scripts = getGoldboxScriptsFromHtml(response_data.data);
         const deals = getDealsFeedFromScripts(scripts);
         const products = deals.map(mapProductFromDeal);
 

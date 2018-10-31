@@ -10,8 +10,16 @@ class Feed {
   }
 
   get() {
-    return axios.get(this.feed_url)
-      .then(response => {
+
+    const feeds = Array.isArray(this.feed_url) ? this.feed_url : [ this.feed_url ];
+
+    const requests = feeds.filter(feed => typeof feed === 'string').map(feed => {
+      return axios.get(feed).catch(error => {
+        throw new Error(error);
+      });
+    });
+
+    return Promise.all(requests).then(response => {
         console.log(`[Feed][${this.title}] Feed Request - Success`);
         return response;
       })
@@ -19,6 +27,7 @@ class Feed {
         console.log(`[Feed][${this.title}] Feed Request - Error: ${error}`);
         throw new Error(error);
       });
+
   }
 
   setItems(items_list = []) {

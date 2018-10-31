@@ -3,9 +3,11 @@ const { respondToSuccess, respondToError } = require('./lib/lambda');
 const Util = require('./lib/util');
 
 const FeedAmazonGoldbox = require('./feeds/feed-amazon-goldbox');
+const FeedAmazonBestsellers = require('./feeds/feed-amazon-bestsellers');
 
 const available_feeds = [
   new FeedAmazonGoldbox(),
+  new FeedAmazonBestsellers(),
 ];
 
 const MAX_PRODUCT_COUNT = 400;
@@ -16,7 +18,9 @@ const ACTIVE_PATH = process.env.active_path;
 
 module.exports.feeds = function(event, context) {
 
-  Promise.all(available_feeds.map(feed => feed.getProducts()))
+  Promise.all(available_feeds.map(feed => feed.getProducts().catch(error => {
+    throw new Error(error);
+  })))
     .then(processFeeds)
     .then(buildRssFeed)
     .then(rss_feed => putObject(FEEDS_PATH, JSON.stringify(rss_feed)))
@@ -49,7 +53,7 @@ function processFeeds(data) {
 
   // If we have blacklist items in our config, filter
 
-  products.filter(product => !product.isBlacklisted());
+  products.filter(product => product && !product.isBlacklisted());
 
   // Cut it down to the most recent 400 after we remove the blacklisted items
 
