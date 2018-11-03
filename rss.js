@@ -6,7 +6,7 @@ const Product = require('./lib/product');
 const Rss = require('./lib/rss');
 const Util = require('./lib/util');
 
-const MAX_RSS_COUNT = 100;
+const MAX_RSS_COUNT = 20;
 const PROCESS_LABEL = '[RSS] Build';
 
 const FEEDS_PATH = process.env.feeds_path;
