@@ -23,7 +23,9 @@ module.exports.feeds = function(event, context) {
   })))
     .then(processFeeds)
     .then(buildRssFeed)
-    .then(rss_feed => putObject(FEEDS_PATH, JSON.stringify(rss_feed)))
+    .then(rss_feed => putObject(FEEDS_PATH, JSON.stringify(rss_feed), {
+      CacheControl: 'max-age=0'
+    }))
     .then(rss_feed => copyObject(ACTIVE_PATH, FEEDS_PATH))
     .then(data => respondToSuccess({
       label: PROCESS_LABEL,

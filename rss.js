@@ -108,7 +108,9 @@ function getNewFeedItemAndSave(data) {
 
   return new Promise((resolve, reject) => {
 
-    putObject(ACTIVE_PATH, JSON.stringify(data))
+    putObject(ACTIVE_PATH, JSON.stringify(data), {
+      CacheControl: 'max-age=0'
+    })
       .then(() => {
         resolve(new_item);
       })
@@ -160,8 +162,16 @@ function updateRssFeed(item) {
         return rss_feed;
       })
       .then(rss_feed => {
+        console.log(rss_feed.items.map((item) => {
+          return {
+            title: item.title,
+            pub_date: item.pub_date,
+          }
+        }))
         return new Promise((resolve, reject) => {
-          putObject(RSS_PATH, rss_feed.toXml())
+          putObject(RSS_PATH, rss_feed.toXml(), {
+            CacheControl: 'max-age=0'
+          })
             .then(() => resolve(rss_feed))
             .catch(reject)
         });
