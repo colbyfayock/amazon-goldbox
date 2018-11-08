@@ -6,7 +6,7 @@ const Product = require('./lib/product');
 const Rss = require('./lib/rss');
 const Util = require('./lib/util');
 
-const MAX_RSS_COUNT = 20;
+const MAX_RSS_COUNT = 5;
 const PROCESS_LABEL = '[RSS] Build';
 
 const FEEDS_PATH = process.env.feeds_path;
@@ -162,12 +162,6 @@ function updateRssFeed(item) {
         return rss_feed;
       })
       .then(rss_feed => {
-        console.log(rss_feed.items.map((item) => {
-          return {
-            title: item.title,
-            pub_date: item.pub_date,
-          }
-        }))
         return new Promise((resolve, reject) => {
           putObject(RSS_PATH, rss_feed.toXml(), {
             CacheControl: 'max-age=0'
