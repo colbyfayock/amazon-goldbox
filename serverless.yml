@@ -27,11 +27,11 @@ functions:
   feeds:
     handler: feeds.feeds
     events:
-      - schedule: cron(50 10 * * ? *)
+      - schedule: cron(50 9 * * ? *)
   rss:
     handler: rss.rss
     events:
-      - schedule: rate(46 minutes)
+      - schedule: cron(0/55 * * * ? *)
 
 plugins:
   - serverless-offline
