@@ -31,7 +31,13 @@ functions:
   rss:
     handler: rss.rss
     events:
-      - schedule: cron(0/55 * * * ? *)
+      - schedule: cron(0/20 * * * ? *)
+    environment:
+      GMCS_TWEET_APP_SECRET: ${ssm:GMCS_TWEET_APP_SECRET}
+      GMCS_TWITTER_CONSUMER_KEY: ${ssm:GMCS_TWITTER_CONSUMER_KEY}
+      GMCS_TWITTER_CONSUMER_SECRET: ${ssm:GMCS_TWITTER_CONSUMER_SECRET}
+      GMCS_TWITTER_ACCESS_TOKEN_KEY: ${ssm:GMCS_TWITTER_ACCESS_TOKEN_KEY}
+      GMCS_TWITTER_ACCESS_TOKEN_SECRET: ${ssm:GMCS_TWITTER_ACCESS_TOKEN_SECRET}
 
 plugins:
   - serverless-offline

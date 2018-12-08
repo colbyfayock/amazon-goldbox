@@ -1,4 +1,5 @@
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
 
 const { s3Url, s3LiveUrl, getObject, copyObject, putObject } = require('./lib/aws');
 const { respondToSuccess, respondToError } = require('./lib/lambda');
@@ -102,9 +103,27 @@ function checkItemsStatus(data) {
  * @description
  */
 
-function getNewFeedItemAndSave(data) {
+async function getNewFeedItemAndSave(data) {
 
   const new_item = data.items.shift();
+  const token = jwt.sign({
+    twitter_consumer_key: process.env.GMCS_TWITTER_CONSUMER_KEY,
+    twitter_consumer_secret: process.env.GMCS_TWITTER_CONSUMER_SECRET,
+    twitter_access_token_key: process.env.GMCS_TWITTER_ACCESS_TOKEN_KEY,
+    twitter_access_token_secret: process.env.GMCS_TWITTER_ACCESS_TOKEN_SECRET,
+  }, process.env.GMCS_TWEET_APP_SECRET);
+
+  const tweet = await axios.post('https://angry-saha-459653.netlify.com/.netlify/functions/tweet', new_item, {
+    headers: {
+      Authorization: token
+    }
+  });
+
+  if ( tweet.status === 200 ) {
+    console.log('[TWITTER][TWEET] Success');
+  } else {
+    console.log(`[TWITTER][TWEET] Error: ${tweet.data}`);
+  }
 
   return new Promise((resolve, reject) => {
 
