@@ -3,11 +3,9 @@ const { respondToSuccess, respondToError } = require('./lib/lambda');
 const Util = require('./lib/util');
 
 const FeedAmazonGoldbox = require('./feeds/feed-amazon-goldbox');
-const FeedAmazonBestsellers = require('./feeds/feed-amazon-bestsellers');
 
 const available_feeds = [
   new FeedAmazonGoldbox(),
-  new FeedAmazonBestsellers(),
 ];
 
 const MAX_PRODUCT_COUNT = 400;
