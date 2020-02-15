@@ -113,7 +113,7 @@ async function getNewFeedItemAndSave(data) {
     twitter_access_token_secret: process.env.GMCS_TWITTER_ACCESS_TOKEN_SECRET,
   }, process.env.GMCS_TWEET_APP_SECRET);
 
-  const tweet = await axios.post('https://angry-saha-459653.netlify.com/.netlify/functions/tweet', new_item, {
+  const tweet = await axios.post('https://tweet-with-twitter.netlify.com/.netlify/functions/tweet', new_item, {
     headers: {
       Authorization: token
     }
