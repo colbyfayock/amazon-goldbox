@@ -1,7 +1,6 @@
-const axios = require('axios');
 const jwt = require('jsonwebtoken');
 
-const { s3Url, s3LiveUrl, getObject, copyObject, putObject } = require('./lib/aws');
+const { getObject, copyObject, putObject } = require('./lib/aws');
 const { respondToSuccess, respondToError } = require('./lib/lambda');
 const Product = require('./lib/product');
 const Rss = require('./lib/rss');
@@ -61,6 +60,8 @@ function getActiveFeed() {
 
 function mapActiveItemsToProducts(data) {
 
+  console.log(`${PROCESS_LABEL} - Mapping items to products`);
+
   const feed_items = data.items.map(item => {
 
     const product = new Product();
@@ -84,7 +85,12 @@ function mapActiveItemsToProducts(data) {
 
 function checkItemsStatus(data) {
 
-  if ( Array.isArray(data.items) && data.items.length > 0 ) return data;
+  console.log(`${PROCESS_LABEL} - Checking items status`);
+
+  if ( Array.isArray(data.items) && data.items.length > 0 ) {
+    console.log(`${PROCESS_LABEL} - Found items`);
+    return data;
+  }
 
   console.log(`${PROCESS_LABEL} - Copying Feeds: No items are available, refreshing data.`);
 
@@ -105,6 +111,8 @@ function checkItemsStatus(data) {
 
 async function getNewFeedItemAndSave(data) {
 
+  console.log(`${PROCESS_LABEL} - Get new feed item and tweet`);
+
   const new_item = data.items.shift();
   const token = jwt.sign({
     twitter_consumer_key: process.env.GMCS_TWITTER_CONSUMER_KEY,
@@ -113,32 +121,45 @@ async function getNewFeedItemAndSave(data) {
     twitter_access_token_secret: process.env.GMCS_TWITTER_ACCESS_TOKEN_SECRET,
   }, process.env.GMCS_TWEET_APP_SECRET);
 
-  const tweet = await axios.post('https://tweet-with-twitter.netlify.com/.netlify/functions/tweet', new_item, {
-    headers: {
-      Authorization: token
+  let payload = {};
+  let response;
+
+  Object.keys(new_item).forEach(key => {
+    if ( typeof new_item[key] !== 'undefined') {
+      payload[key] = new_item[key];
     }
   });
 
-  if ( tweet.status === 200 ) {
-    console.log('[TWITTER][TWEET] Success');
-  } else {
-    console.log(`[TWITTER][TWEET] Error: ${tweet.data}`);
+  try {
+    response = await fetch('https://tweet-with-twitter.netlify.com/.netlify/functions/tweet', {
+      method: 'post',
+      body: JSON.stringify(payload),
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch(e) {
+    console.log(`${PROCESS_LABEL} - [TWITTER][TWEET] Error: ${JSON.stringify(e)}`);
+    throw e;
   }
 
-  return new Promise((resolve, reject) => {
+  if ( response.status === 200 ) {
+    console.log(`${PROCESS_LABEL} - [TWITTER][TWEET] Success`);
+  } else {
+    console.log(`${PROCESS_LABEL} - [TWITTER][TWEET] Error: ${response.statusText}`);
+    throw new Error(`Failed to tweet: ${response.statusText}`);
+  }
 
-    putObject(ACTIVE_PATH, JSON.stringify(data), {
+  try {
+    await putObject(ACTIVE_PATH, JSON.stringify(data), {
       CacheControl: 'max-age=0'
-    })
-      .then(() => {
-        resolve(new_item);
-      })
-      .catch(error => {
-        throw new Error(error);
-      });
+    });
+  } catch(e) {
+    throw e;
+  }
 
-  });
-
+  return new_item;
 }
 
 
@@ -148,6 +169,8 @@ async function getNewFeedItemAndSave(data) {
  */
 
 function processNewItem(item) {
+
+  console.log(`${PROCESS_LABEL} - Processing new item`);
 
   item.refreshGuid();
   item.setPublishedDate();
