@@ -14,15 +14,15 @@ class FeedAmazonGoldbox extends Feed {
     this.feed_url = [
       // 'https://amazon.com/gp/rss/bestsellers/mobile-apps',
       // 'https://amazon.com/gp/rss/bestsellers/photo/',
-      'https://amazon.com/gp/rss/bestsellers/wireless/',
-      'https://amazon.com/gp/rss/bestsellers/electronics/',
-      'https://amazon.com/gp/rss/bestsellers/home-garden/',
+      // 'https://amazon.com/gp/rss/bestsellers/wireless/',
+      // 'https://amazon.com/gp/rss/bestsellers/electronics/',
+      // 'https://amazon.com/gp/rss/bestsellers/home-garden/',
       // 'https://amazon.com/gp/rss/bestsellers/kitchen/',
-      'https://amazon.com/gp/rss/bestsellers/office-products/',
-      'https://amazon.com/gp/rss/bestsellers/lawn-garden/',
+      // 'https://amazon.com/gp/rss/bestsellers/office-products/',
+      // 'https://amazon.com/gp/rss/bestsellers/lawn-garden/',
       // 'https://amazon.com/gp/rss/bestsellers/sporting-goods/',
-      'https://amazon.com/gp/rss/bestsellers/toys-and-games/',
-      'https://amazon.com/gp/rss/bestsellers/videogames/',
+      // 'https://amazon.com/gp/rss/bestsellers/toys-and-games/',
+      // 'https://amazon.com/gp/rss/bestsellers/videogames/',
     ];
 
   }
