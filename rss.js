@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const fetch = require('node-fetch');
 
 const { getObject, copyObject, putObject } = require('./lib/aws');
 const { respondToSuccess, respondToError } = require('./lib/lambda');
