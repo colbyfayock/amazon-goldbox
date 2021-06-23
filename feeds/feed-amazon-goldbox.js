@@ -10,7 +10,8 @@ class FeedAmazonGoldbox extends Feed {
 
     this.title = 'Amazon Goldbox';
     this.id = 'feed-amazon-goldbox';
-    this.feed_url = 'https://amazon.com/gp/goldbox';
+    this.feed_url = 'https://amazon.com/primeday';
+    // this.feed_url = 'https://amazon.com/gp/goldbox';
 
   }
 
