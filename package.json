@@ -9,7 +9,7 @@
     "cheerio": "^1.0.0-rc.9",
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "^2.6.1",
-    "serverless": "^2.44.0",
+    "serverless": "^3.25.1",
     "serverless-http": "^2.7.0",
     "xml2js": "^0.4.23",
     "xmlbuilder": "^15.1.1"
